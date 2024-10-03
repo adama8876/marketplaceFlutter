@@ -1,1 +1,1 @@
-{}
+{"flutter":{"platforms":{"android":{"default":{"projectId":"marketplaceproject-a018b","appId":"1:567376228596:android:6f5785e8968043de3daea1","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"marketplaceproject-a018b","configurations":{"android":"1:567376228596:android:6f5785e8968043de3daea1","ios":"1:567376228596:ios:535b4e33323a632b3daea1","macos":"1:567376228596:ios:535b4e33323a632b3daea1","web":"1:567376228596:web:6669461dc71916293daea1","windows":"1:567376228596:web:2584a4b456c9d7e23daea1"}}}}}}
