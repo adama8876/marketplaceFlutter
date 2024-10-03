@@ -1,0 +1,53 @@
+/* Le conteneur prend toute la largeur de la fenêtre sans couleur de fond */
+.container {
+  width: 97%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 10px;
+  margin-left: 20px;
+}
+
+/* Les éléments internes avec une couleur de fond */
+.item {
+  display: flex;
+  flex-direction: column; /* Organise les éléments en colonne pour avoir le chiffre en bas */
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'Roboto', sans-serif;
+  width: 250px; /* Largeur des divs */
+  height: 120px;
+  border-radius: 10px; /* Coins arrondis */
+  padding: 10px;
+}
+
+/* Conteneur pour l'icône et le texte */
+.top-row {
+  margin-top: 20px;
+  display: flex;
+  align-items: center; /* Alignement des icônes et du texte sur la même ligne */
+  justify-content: center;
+  width: 100%; /* Assure que l'alignement occupe toute la largeur */
+}
+
+/* Style pour l'icône */
+.monicone {
+  font-size: 40px;
+  color: #fff;
+  margin-right: 30px; /* Espace entre l'icône et le texte */
+}
+
+/* Style pour le texte */
+.item span {
+  font-size: 26px;
+  font-weight: bold;
+  color: #fff;
+}
+
+/* Style pour le chiffre */
+.statistique {
+  margin-top: 10px;
+  font-size: 30px;
+  color: #fff;
+  font-weight: bold;
+}
