@@ -34,21 +34,25 @@ class Product {
 
   // Factory method to create a Product from Firestore
   factory Product.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
-    return Product(
-      id: doc.id,
-      name: data['name'] ?? '',
-      description: data['description'] ?? '',
-      mainImageUrl: data['mainImageUrl'] ?? '',
-      secondImageUrl: data['secondImageUrl'],
-      thirdImageUrl: data['thirdImageUrl'],
-      fourthImageUrl: data['fourthImageUrl'],
-      price: data['price'] ?? 0,
-      quantity: data['quantity'] ?? 0,
-      categoryId: data['categoryId'] ?? '',
-      subcategoryId: data['subcategoryId'] ?? '',
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
-      variantData: List<String>.from(data['variantData'] ?? []),
-    );
-  }
+  final data = doc.data() as Map<String, dynamic>;
+  print('Firestore data: $data'); // Log the data for inspection
+
+  return Product(
+    id: doc.id,
+    name: data['name']?.toString() ?? '',
+    description: data['description']?.toString() ?? '',
+    mainImageUrl: data['mainImageUrl']?.toString() ?? '',
+    secondImageUrl: data['secondImageUrl']?.toString(),
+    thirdImageUrl: data['thirdImageUrl']?.toString(),
+    fourthImageUrl: data['fourthImageUrl']?.toString(),
+    price: data['price'] ?? 0,
+    quantity: data['quantity'] ?? 0,
+    categoryId: data['categoryId']?.toString() ?? '',
+    subcategoryId: data['subcategoryId']?.toString() ?? '',
+    createdAt: (data['createdAt'] as Timestamp).toDate(),
+    variantData: (data['variantData'] as List<dynamic>).map((item) => item.toString()).toList(),
+  );
+}
+
+
 }

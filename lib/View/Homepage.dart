@@ -45,15 +45,16 @@ class _HomepageState extends State<Homepage> {
 Future<void> _fetchProducts() async {
   try {
     List<Product> products = await _productService.fetchProducts();
+    print('Fetched products: $products'); // Add this line
     setState(() {
       _products = products;
-      // Initialize _isFavorite with false for each product only if products are fetched successfully
       _isFavorite = List<bool>.filled(_products.length, false);
     });
   } catch (e) {
-    print('Error fetching products: $e');
+    print('Error fetching products: $e'); // This is already present
   }
 }
+
 
 
   // Fetch subcategories from Firestore
@@ -246,6 +247,7 @@ Future<void> _fetchProducts() async {
 
   // Product Grid Builder Method
   Widget _buildProductGrid() {
+    print('Products in grid: $_products'); // Add this line
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: GridView.builder(

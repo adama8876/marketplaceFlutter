@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart'; // Importez firebase_core
 import 'package:marketplace_app/View/Accueil.dart';
 import 'package:marketplace_app/View/connectionpage.dart';
+import 'package:marketplace_app/View/registerPage.dart';
 // import 'package:marketplace_app/View/Homepage.dart';
 import 'firebase_options.dart'; // Importez le fichier généré par flutterfire configure
 // import 'package:marketplace_app/View/connectionpage.dart';

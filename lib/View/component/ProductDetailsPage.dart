@@ -1,4 +1,6 @@
 // product_details_page.dart
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:marketplace_app/Models/product_model.dart';
 
@@ -36,10 +38,7 @@ class ProductDetailsPage extends StatelessWidget {
                 style: TextStyle(fontSize: 16),
               ),
               SizedBox(height: 10),
-              Text(
-                'Quantity: ${product.quantity}',
-                style: TextStyle(fontSize: 16),
-              ),
+             
               // Display other attributes as needed
             ],
           ),
