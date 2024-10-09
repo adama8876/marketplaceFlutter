@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:marketplace_app/Services/auth_service.dart';
 import 'dart:io';
-import 'package:marketplace_app/Services/auth_service.dart'; // Import your AuthService
+// import 'package:marketplace_app/Services/auth_service.dart'; // Import your AuthService
 import 'package:marketplace_app/Utils/themes.dart';
-import 'package:marketplace_app/models/user_model.dart'; // Import your UserModel
+import 'package:marketplace_app/models/user_model.dart';
+// import 'package:marketplace_app/Models/user_model.dart';
+
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);

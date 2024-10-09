@@ -43,12 +43,6 @@ class _UserinfoState extends State<Userinfo> {
       appBar: AppBar(
         backgroundColor: Colors.grey[30],
         elevation: 1,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
         title: Text(
           'Paramètres',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),

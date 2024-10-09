@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:badges/badges.dart' as badges;
 import 'package:google_fonts/google_fonts.dart';
@@ -10,6 +11,8 @@ import 'package:marketplace_app/Utils/themes.dart';
 import 'package:marketplace_app/View/component/ProductDetailsPage.dart';
 import 'package:marketplace_app/View/component/image_carousel.dart';
 import 'package:marketplace_app/Models/subcategory_model.dart';
+import 'package:marketplace_app/View/pagePanier.dart';
+// import 'package:marketplace_app/View/pagePanier.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -30,6 +33,15 @@ class _HomepageState extends State<Homepage> {
   List<Subcategory> _subcategories = [];
   String _selectedSubcategory = 'All';
   final SubcategoryService _subcategoryService = SubcategoryService();
+
+
+
+
+
+
+
+
+  
 
   // List to track favorite status of each product
   List<bool> _isFavorite = [];
@@ -54,6 +66,9 @@ Future<void> _fetchProducts() async {
     print('Error fetching products: $e'); // This is already present
   }
 }
+
+
+
 
 
 
@@ -96,23 +111,35 @@ Future<void> _fetchProducts() async {
   }
 
   // AppBar Builder Method
-  AppBar _buildAppBar() {
-    return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      toolbarHeight: 100,
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            'BaikaSugu',
-            style: GoogleFonts.lobster(
-              color: Color(0xFF2C3E50),
-              fontSize: 40,
-              fontWeight: FontWeight.normal,
-            ),
+AppBar _buildAppBar() {
+  return AppBar(
+    backgroundColor: Colors.white,
+    elevation: 0,
+    toolbarHeight: 100,
+    title: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          'BaikaSugu',
+          style: GoogleFonts.lobster(
+            color: Color(0xFF2C3E50),
+            fontSize: 40,
+            fontWeight: FontWeight.normal,
           ),
-          badges.Badge(
+        ),
+        GestureDetector(
+          onTap: () {
+       String userId = FirebaseAuth.instance.currentUser!.uid;
+            Navigator.push(
+  context,
+  MaterialPageRoute(
+     builder: (context) => Pagepanier(userId: userId), // Remplace "ID_DE_LUTILISATEUR" par la variable qui contient l'ID de l'utilisateur
+  ),
+);
+
+            
+          },
+          child: badges.Badge(
             badgeContent: Text(
               '3',
               style: TextStyle(
@@ -123,7 +150,7 @@ Future<void> _fetchProducts() async {
               ),
             ),
             badgeStyle: badges.BadgeStyle(
-              badgeColor: AppColors.primaryColor,
+              badgeColor: Colors.red,
               padding: EdgeInsets.all(5),
             ),
             child: Icon(
@@ -132,10 +159,12 @@ Future<void> _fetchProducts() async {
               size: 30,
             ),
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
+
 
   // Search Bar Builder Method
   Widget _buildSearchBar() {
