@@ -25,7 +25,7 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
       items: [
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
-          label: 'Home',
+          label: 'Accueil',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.grid_view),
@@ -37,11 +37,11 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.receipt_long),
-          label: 'receipt',
+          label: 'Notification',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person),
-          label: 'person',
+          label: 'Paramètres',
         ),
       ],
     );

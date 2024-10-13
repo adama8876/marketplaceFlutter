@@ -14,7 +14,9 @@ class Product {
   final String categoryId;
   final String subcategoryId;
   final DateTime createdAt;
-  final List<String> variantData;
+  // final List<String> variantData;
+  final List<Map<String, dynamic>> variantData;
+
 
   Product({
     required this.id,
@@ -50,8 +52,10 @@ class Product {
     categoryId: data['categoryId']?.toString() ?? '',
     subcategoryId: data['subcategoryId']?.toString() ?? '',
     createdAt: (data['createdAt'] as Timestamp).toDate(),
-    variantData: (data['variantData'] as List<dynamic>).map((item) => item.toString()).toList(),
-  );
+    variantData: (data['variantData'] as List<dynamic>)
+          .map((item) => item as Map<String, dynamic>)
+          .toList(),
+    );
 }
 
 

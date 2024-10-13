@@ -17,4 +17,38 @@ class ProductService {
   }
 }
 
+
+
+
+// Method to fetch products by subcategory
+  Future<List<Product>> fetchProductsBySubcategory(String subcategoryId) async {
+    try {
+      QuerySnapshot snapshot = await _firestore
+          .collection('products')
+          .where('subcategoryId', isEqualTo: subcategoryId)
+          .get();
+
+      return snapshot.docs.map((doc) => Product.fromFirestore(doc)).toList();
+    } catch (e) {
+      throw Exception('Error fetching products: $e');
+    }
+  }
+
+
+
+ Future<List<Product>> fetchProductsByCategory(String categoryId) async {
+  try {
+    QuerySnapshot snapshot = await _firestore
+        .collection('products')
+        .where('categoryId', isEqualTo: categoryId)
+        .get();
+
+    return snapshot.docs.map((doc) => Product.fromFirestore(doc)).toList();
+  } catch (e) {
+    print('Error fetching products by category: $e');
+    return [];
+  }
+}
+
+
 }
