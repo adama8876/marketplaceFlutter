@@ -16,40 +16,46 @@ class AuthService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Sign in method
-  Future<User?> signIn(UserModel user) async {
-    try {
-      UserCredential result = await _auth.signInWithEmailAndPassword(
-        email: user.email,
-        password: user.password,
-      );
+  // Sign in method with role and isActive check
+Future<User?> signIn(UserModel user) async {
+  try {
+    UserCredential result = await _auth.signInWithEmailAndPassword(
+      email: user.email,
+      password: user.password,
+    );
 
-      User? loggedInUser = result.user;
+    User? loggedInUser = result.user;
 
-      if (loggedInUser != null) {
-        // Check if the user has the 'client' role in Firestore
-        DocumentSnapshot userDoc =
-            await _firestore.collection('users').doc(loggedInUser.uid).get();
+    if (loggedInUser != null) {
+      // Récupère le document utilisateur dans Firestore
+      DocumentSnapshot userDoc =
+          await _firestore.collection('users').doc(loggedInUser.uid).get();
 
-        if (userDoc.exists) {
-          String role = userDoc.get('role');
+      if (userDoc.exists) {
+        String role = userDoc.get('role');
+        bool isActive = userDoc.get('isActive');
 
-          if (role == 'client') {
-            return loggedInUser;
-          } else {
-            print('User does not have the client role.');
-            return null;
-          }
+        if (role == 'client' && isActive) {
+          return loggedInUser;
+        } else if (!isActive) {
+          print("Votre compte n'est pas activé. Veuillez contacter l'administrateur.");
+          return null;
         } else {
-          print('User document does not exist in Firestore.');
+          print('User does not have the client role.');
           return null;
         }
+      } else {
+        print('User document does not exist in Firestore.');
+        return null;
       }
-      return null;
-    } catch (e) {
-      print('Error: $e');
-      return null;
     }
+    return null;
+  } catch (e) {
+    print('Error: $e');
+    return null;
   }
+}
+
 
   Future<UserModel?> getUserData() async {
   try {

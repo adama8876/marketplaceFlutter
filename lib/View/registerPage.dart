@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:marketplace_app/Utils/themes.dart';
+import 'package:marketplace_app/View/boutiqueregister.dart';
 import 'package:marketplace_app/View/connectionpage.dart'; // Importez la page de connexion
 
 class RegScreen extends StatelessWidget {
@@ -151,7 +152,7 @@ class RegScreen extends StatelessWidget {
                       alignment: Alignment.bottomRight,
                       child: Padding(
                         padding: const EdgeInsets.only(right: 20, bottom: 20),
-                        child: Column(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
@@ -162,9 +163,10 @@ class RegScreen extends StatelessWidget {
                                 color: Colors.grey,
                               ),
                             ),
+                             SizedBox(width: 10),
                             GestureDetector(
                               onTap: () {
-                                // Naviguer vers la page de connexion
+                               
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -177,7 +179,7 @@ class RegScreen extends StatelessWidget {
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 17,
-                                  color: Colors.black,
+                                  color: Colors.red,
                                 ),
                               ),
                             ),
@@ -191,22 +193,26 @@ class RegScreen extends StatelessWidget {
                     const SizedBox(height: 20),
                           ElevatedButton(
                                   onPressed: () {
-                                    // Action à effectuer lors du clic
-                                    print("Bouton cliqué : Voulez-vous créer un compte vendeur ?");
+                                     Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => BoutiqueRegister(),
+                                  ),
+                                );
                                   },
                                   style: ElevatedButton.styleFrom(
                                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                                    backgroundColor: Colors.white, // Couleur du bouton
+                                    backgroundColor: const Color.fromARGB(172, 76, 175, 79), 
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8), // Forme arrondie du bouton
+                                      borderRadius: BorderRadius.circular(8), 
                                     ),
-                                    // elevation: 5, // Effet d'ombre lors du clic
+                                    
                                   ),
                                   child: const Text(
                                     'Voulez-vous créer un compte vendeur ?',
                                     style: TextStyle(
                                       fontSize: 16, 
-                                      color: AppColors.primaryColor,
+                                      color: Colors.white,
                                       fontWeight: FontWeight.bold 
                                     ),
                                   ),),

@@ -12,6 +12,8 @@ import 'package:marketplace_app/View/component/ProductDetailsPage.dart';
 import 'package:marketplace_app/View/component/image_carousel.dart';
 import 'package:marketplace_app/Models/subcategory_model.dart';
 import 'package:marketplace_app/View/pagePanier.dart';
+import 'package:marketplace_app/Services/PanierService.dart';
+
 // import 'package:marketplace_app/View/pagePanier.dart';
 
 class Homepage extends StatefulWidget {
@@ -30,9 +32,17 @@ class _HomepageState extends State<Homepage> {
   List<Product> _products = [];
   final ProductService _productService = ProductService();
 
+  final CartService _panierService = CartService();
+
   List<Subcategory> _subcategories = [];
   String _selectedSubcategory = 'All';
   final SubcategoryService _subcategoryService = SubcategoryService();
+
+
+
+  TextEditingController _searchController = TextEditingController();
+List<Product> _filteredProducts = [];
+
 
 
 
@@ -51,21 +61,38 @@ class _HomepageState extends State<Homepage> {
     super.initState();
     _fetchSubcategories();
     _fetchProducts(); // Fetch products on initialization
+     _filteredProducts = _products;
   }
 
  // Fetch products from Firestore
 Future<void> _fetchProducts() async {
   try {
     List<Product> products = await _productService.fetchProducts();
-    print('Fetched products: $products'); // Add this line
+    print('Fetched products: $products');
     setState(() {
       _products = products;
+      _filteredProducts = products; // Mettre à jour la liste filtrée initialement
       _isFavorite = List<bool>.filled(_products.length, false);
     });
   } catch (e) {
-    print('Error fetching products: $e'); // This is already present
+    print('Error fetching products: $e');
   }
 }
+
+
+
+
+    void _filterProducts(String query) {
+  List<Product> filteredList = _products.where((product) {
+    return product.name.toLowerCase().contains(query.toLowerCase());
+  }).toList();
+
+  setState(() {
+    _filteredProducts = filteredList;  // Met à jour la liste filtrée
+  });
+}
+
+
 
 
 
@@ -110,60 +137,92 @@ Future<void> _fetchProducts() async {
     );
   }
 
-  // AppBar Builder Method
+  
+
 AppBar _buildAppBar() {
   return AppBar(
-    backgroundColor: Colors.white,
-    elevation: 0,
-    toolbarHeight: 100,
+    backgroundColor: Colors.white, 
+    elevation: 0, 
+    scrolledUnderElevation: 0,
+    toolbarHeight: 80,
     title: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           'BaikaSugu',
           style: GoogleFonts.lobster(
-            color: Color(0xFF2C3E50),
+            color: AppColors.primaryColor,
             fontSize: 40,
             fontWeight: FontWeight.normal,
           ),
         ),
         GestureDetector(
           onTap: () {
-       String userId = FirebaseAuth.instance.currentUser!.uid;
+            String userId = FirebaseAuth.instance.currentUser!.uid;
             Navigator.push(
-  context,
-  MaterialPageRoute(
-     builder: (context) => Pagepanier(userId: userId), // Remplace "ID_DE_LUTILISATEUR" par la variable qui contient l'ID de l'utilisateur
-  ),
-);
-
-            
-          },
-          child: badges.Badge(
-            badgeContent: Text(
-              '3',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Poppins',
+              context,
+              MaterialPageRoute(
+                builder: (context) => Pagepanier(userId: userId),
               ),
-            ),
-            badgeStyle: badges.BadgeStyle(
-              badgeColor: Colors.red,
-              padding: EdgeInsets.all(5),
-            ),
-            child: Icon(
-              Icons.shopping_cart_outlined,
-              color: Colors.grey,
-              size: 30,
-            ),
+            );
+          },
+          child: StreamBuilder<int>(
+            stream: _panierService.getCartItemCount(FirebaseAuth.instance.currentUser!.uid),
+            builder: (context, snapshot) {
+              int cartItemCount = snapshot.data ?? 0; // Use snapshot to get the cart count
+              return badges.Badge(
+                badgeContent: Text(
+                  cartItemCount.toString(),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+                badgeStyle: badges.BadgeStyle(
+                  badgeColor: Colors.red,
+                  padding: EdgeInsets.all(5),
+                ),
+                child: Icon(
+                  Icons.shopping_cart_outlined,
+                  color: Colors.grey,
+                  size: 30,
+                ),
+              );
+            },
           ),
         ),
       ],
     ),
   );
 }
+
+
+  // Method to build the cart icon with the item count
+  Widget _buildCartIcon(String count) {
+    return badges.Badge(
+      badgeContent: Text(
+        count,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+          fontFamily: 'Poppins',
+        ),
+      ),
+      badgeStyle: badges.BadgeStyle(
+        badgeColor: Colors.red,
+        padding: EdgeInsets.all(5),
+      ),
+      child: Icon(
+        Icons.shopping_cart_outlined,
+        color: Colors.grey,
+        size: 30,
+      ),
+    );
+  }
+
 
 
   // Search Bar Builder Method
@@ -174,6 +233,10 @@ AppBar _buildAppBar() {
         children: [
           Expanded(
             child: TextField(
+              controller: _searchController,
+            onChanged: (value) {
+              _filterProducts(value);  // Appelle la fonction de filtrage à chaque changement
+            },
               decoration: InputDecoration(
                 hintText: 'Rechercher un produit',
                 hintStyle: TextStyle(
@@ -193,7 +256,7 @@ AppBar _buildAppBar() {
           Container(
             padding: EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: Color(0xFF2C3E50),
+              color: AppColors.primaryColor,
               borderRadius: BorderRadius.circular(20),
             ),
             child: Icon(
@@ -260,8 +323,11 @@ AppBar _buildAppBar() {
   // Image Carousel Builder Method
   Widget _buildImageCarousel() {
     return Card(
+      elevation: 10,
+      shadowColor: AppColors.primaryColor,
       color: Colors.white,
       shape: RoundedRectangleBorder(
+        
         borderRadius: BorderRadius.circular(15),
       ),
       child: Container(
@@ -275,42 +341,44 @@ AppBar _buildAppBar() {
   }
 
   // Product Grid Builder Method
-  Widget _buildProductGrid() {
-    print('Products in grid: $_products'); // Add this line
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: GridView.builder(
-        shrinkWrap: true,
-        physics: NeverScrollableScrollPhysics(),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-          childAspectRatio: 0.73,
-        ),
-        itemCount: _products.length,
-        itemBuilder: (context, index) {
-          final product = _products[index];
-          return GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ProductDetailsPage(product: product),
-                ),
-              );
-            },
-            child: _buildProductCard(
-              imageUrl: product.mainImageUrl,
-              name: product.name,
-              price: product.price,
-              index: index,
-            ),
-          );
-        },
+  // Product Grid Builder Method
+Widget _buildProductGrid() {
+  print('Products in grid: $_filteredProducts'); // Mise à jour pour voir la liste filtrée
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+    child: GridView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+        childAspectRatio: .61,
       ),
-    );
-  }
+      itemCount: _filteredProducts.length, // Utiliser _filteredProducts
+      itemBuilder: (context, index) {
+        final product = _filteredProducts[index]; // Utiliser _filteredProducts
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ProductDetailsPage(product: product),
+              ),
+            );
+          },
+          child: _buildProductCard(
+            imageUrl: product.mainImageUrl,
+            name: product.name,
+            price: product.price,
+            index: index,
+          ),
+        );
+      },
+    ),
+  );
+}
+
 
   // Product Card Builder Method
   Widget _buildProductCard({
@@ -320,6 +388,8 @@ AppBar _buildAppBar() {
   required int index,
 }) {
   return Card(
+    elevation: 5,
+    shadowColor: AppColors.primaryColor,
     color: Colors.grey[300],
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(20),
@@ -331,7 +401,7 @@ AppBar _buildAppBar() {
         Padding(
           padding: EdgeInsets.only(top: 10, left: 15, right: 15),
           child: Container(
-            height: 150, // Adjusted height to fit content better
+            height: 175, // Adjusted height to fit content better
             width: double.infinity,
             decoration: BoxDecoration(
               image: DecorationImage(

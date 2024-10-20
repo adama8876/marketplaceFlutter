@@ -44,6 +44,8 @@ dependencies:
   firebase_storage: ^12.3.2
   badges: ^3.1.2
   image_picker: ^1.1.2
+  dropdown_search: ^6.0.1
+  quickalert: ^1.1.0
 
 dev_dependencies:
   flutter_test:
@@ -72,6 +74,7 @@ flutter:
     - assets/
     - assets/images/
     - assets/images/chaussure22.jpg
+    - assets/images/iconshop1.png
 
 
 

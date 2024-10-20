@@ -62,4 +62,22 @@ class CartService {
   Future<void> clearCart(String userId) async {
     await _firestore.collection('carts').doc(userId).delete();
   }
+
+
+
+
+    Stream<int> getCartItemCount(String userId) {
+    // Écoute en temps réel les changements dans le document du panier
+    return _firestore.collection('carts').doc(userId).snapshots().map((snapshot) {
+      if (snapshot.exists && snapshot.data() != null) {
+        // Récupère les articles du panier et calcule leur nombre
+        final cartData = snapshot.data() as Map<String, dynamic>;
+        final items = cartData['items'] as List<dynamic>?;
+        return items?.length ?? 0; // Retourne le nombre d'articles
+      }
+      return 0; // Retourne 0 si le panier n'existe pas
+    });
+  }
+
+  
 }

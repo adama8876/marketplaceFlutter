@@ -1,13 +1,16 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:marketplace_app/Models/cartItem.dart';
 import 'package:marketplace_app/Utils/themes.dart';
+import 'package:marketplace_app/View/CommandeDetails.dart';
 import 'package:marketplace_app/View/component/CartItemdesign.dart';
 
 class Pagepanier extends StatefulWidget {
   final String userId;
-  const Pagepanier({super.key, required this.userId});
+  const Pagepanier({super.key, required this.userId, });
 
   @override
   _PagepanierState createState() => _PagepanierState();
@@ -22,53 +25,42 @@ class _PagepanierState extends State<Pagepanier> {
   }
 
   // Méthode pour mettre à jour la quantité dans Firestore
-Future<void> _updateQuantity(CartItem cartItem, int newQuantity) async {
-  // Récupère le panier de l'utilisateur
-  final cartSnapshot = await _firestore.collection('carts').doc(widget.userId).get();
+  Future<void> _updateQuantity(CartItem cartItem, int newQuantity) async {
+    final cartSnapshot = await _firestore.collection('carts').doc(widget.userId).get();
 
-  if (!cartSnapshot.exists) return;
+    if (!cartSnapshot.exists) return;
 
-  // Récupère la liste d'items actuelle
-  final cartData = cartSnapshot.data() as Map<String, dynamic>;
-  List items = cartData['items'];
+    final cartData = cartSnapshot.data() as Map<String, dynamic>;
+    List items = cartData['items'];
 
-  // Trouver l'article dans le panier et le retirer
-  items.removeWhere((item) => item['productId'] == cartItem.productId);
+    items.removeWhere((item) => item['productId'] == cartItem.productId);
 
-  // Si la nouvelle quantité est > 0, on ajoute l'article mis à jour
-  if (newQuantity > 0) {
-    final updatedItem = cartItem.toFirestore();
-    updatedItem['quantity'] = newQuantity; // Met à jour la quantité
-    items.add(updatedItem); // Ajoute l'article mis à jour
+    if (newQuantity > 0) {
+      final updatedItem = cartItem.toFirestore();
+      updatedItem['quantity'] = newQuantity;
+      items.add(updatedItem);
+    }
+
+    await _firestore.collection('carts').doc(widget.userId).update({
+      'items': items,
+    });
   }
 
-  // Mettre à jour le panier dans Firestore
-  await _firestore.collection('carts').doc(widget.userId).update({
-    'items': items, // Met à jour avec la nouvelle liste d'items
-  });
-}
-
-
   // Méthode pour supprimer un article du panier
-Future<void> _removeFromCart(String productId) async {
-  // Récupère le panier actuel de l'utilisateur
-  final cartSnapshot = await _firestore.collection('carts').doc(widget.userId).get();
+  Future<void> _removeFromCart(String productId) async {
+    final cartSnapshot = await _firestore.collection('carts').doc(widget.userId).get();
 
-  if (!cartSnapshot.exists) return;
+    if (!cartSnapshot.exists) return;
 
-  // Récupère les items du panier
-  final cartData = cartSnapshot.data() as Map<String, dynamic>;
-  List items = cartData['items'];
+    final cartData = cartSnapshot.data() as Map<String, dynamic>;
+    List items = cartData['items'];
 
-  // Supprime l'élément correspondant au productId
-  items.removeWhere((item) => item['productId'] == productId);
+    items.removeWhere((item) => item['productId'] == productId);
 
-  // Mettre à jour Firestore avec la nouvelle liste d'items
-  await _firestore.collection('carts').doc(widget.userId).update({
-    'items': items, // Met à jour avec la liste sans l'élément supprimé
-  });
-}
-
+    await _firestore.collection('carts').doc(widget.userId).update({
+      'items': items,
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -100,63 +92,91 @@ Future<void> _removeFromCart(String productId) async {
           }
 
           if (!snapshot.hasData || snapshot.data == null) {
-            return Center(child: Text("Votre panier est vide"));
+            return _buildEmptyCart(); // Affiche l'image du panier vide
           }
 
-          // Vérifie si le document existe et si les données sont sous la forme attendue
           final data = snapshot.data!.data();
           if (data == null) {
-            return Center(child: Text("Erreur: Données introuvables"));
+            return _buildEmptyCart(); // Affiche l'image du panier vide
           }
 
           final cartData = data as Map<String, dynamic>;
 
-          // Vérifie si 'items' existe et est une liste
           if (cartData.containsKey('items') && cartData['items'] is List) {
             final List items = cartData['items'];
 
-            // Utilise une vérification pour chaque élément de la liste 'items'
+            if (items.isEmpty) {
+              return _buildEmptyCart(); 
+            }
+
             final cartItems = items.map((item) {
-              if (item is Map<String, dynamic>) {
-                return CartItem.fromFirestore(item); // Crée des CartItem à partir des données Firestore
-              } else {
-                print('Erreur: Element incorrect dans items -> $item');
-                throw TypeError();
-              }
+              return CartItem.fromFirestore(item);
             }).toList();
 
             return Column(
               children: [
                 Expanded(
-                    child: ListView.builder(
-                      itemCount: cartItems.length, // Nombre d'éléments dans le panier
-                      itemBuilder: (context, index) {
-                        final cartItem = cartItems[index]; // Récupère l'élément courant
-
-                        // Assurez-vous que les valeurs sont bien récupérées du modèle CartItem
-                        return CartItemdesign(
-                          productName: cartItem.name,
-                          mainImageUrl: cartItem.mainImageUrl,
-                          price: cartItem.price, 
-                          quantity: cartItem.quantity, 
-                          onRemove: () => _removeFromCart(cartItem.productId), 
-                          onIncreaseQuantity: () =>
-                              _updateQuantity(cartItem, cartItem.quantity + 1), 
-                          onDecreaseQuantity: () =>
-                              _updateQuantity(cartItem, cartItem.quantity - 1), 
-                        );
-                      },
-                    ),
+                  child: ListView.builder(
+                    itemCount: cartItems.length,
+                    itemBuilder: (context, index) {
+                      final cartItem = cartItems[index];
+                      return CartItemdesign(
+                        productName: cartItem.name,
+                        mainImageUrl: cartItem.mainImageUrl,
+                        price: cartItem.price,
+                        quantity: cartItem.quantity,
+                        onRemove: () => _removeFromCart(cartItem.productId),
+                        onIncreaseQuantity: () =>
+                            _updateQuantity(cartItem, cartItem.quantity + 1),
+                        onDecreaseQuantity: () =>
+                            _updateQuantity(cartItem, cartItem.quantity - 1),
+                      );
+                    },
                   ),
-
-                _buildTotalSection(cartItems), // Section pour afficher le total
+                ),
+                _buildTotalSection(cartItems),
               ],
             );
           } else {
-            return Center(child: Text("Aucun article dans le panier."));
+            return _buildEmptyCart(); 
           }
         },
       ),
+    );
+  }
+
+  
+  Widget _buildEmptyCart() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        SizedBox(height: 20),
+        Text(
+          "OUPS !!!!",
+          style: GoogleFonts.poppins(
+            fontSize: 45,
+            fontWeight: FontWeight.bold,
+            fontStyle: FontStyle.italic,
+            color: Colors.red,
+          ),
+            ),
+             Text(
+          "Votre panier est vide",
+          style: GoogleFonts.poppins(
+            fontSize: 20,
+            color: AppColors.primaryColor,
+          ),
+        ),
+        Center(
+          child: Image.asset(
+            'assets/images/empttyy.png',
+            fit: BoxFit.cover,
+            height: 330,
+          ),
+        ),
+        SizedBox(height: 20),
+        
+      ],
     );
   }
 
@@ -202,8 +222,24 @@ Future<void> _removeFromCart(String productId) async {
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: ElevatedButton.icon(
-              onPressed: () {
-                // Action pour passer la commande
+              onPressed: () async {
+                final cartSnapshot = await _firestore.collection('carts').doc(widget.userId).get();
+                final cartData = cartSnapshot.data() as Map<String, dynamic>;
+                List items = cartData['items'];
+
+                final articles = items.map((item) => {
+                  'image': item['mainImageUrl'],
+                  'name': item['name'],
+                  'price': item['price'],
+                  'quantity': item['quantity'],
+                }).toList();
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CommandeDetails(articles: articles),
+                  ),
+                );
               },
               icon: Icon(Icons.shopping_bag, color: Colors.white),
               label: Text(
@@ -216,7 +252,7 @@ Future<void> _removeFromCart(String productId) async {
               ),
               style: ElevatedButton.styleFrom(
                 padding: EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-                backgroundColor: Color(0xFF2F3E50),
+                backgroundColor: AppColors.primaryColor,
               ),
             ),
           ),

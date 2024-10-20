@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:marketplace_app/Utils/themes.dart';
 import 'package:marketplace_app/View/Accueil.dart';
 import 'package:marketplace_app/View/registerPage.dart';
@@ -28,19 +29,42 @@ class _ConnectionPageState extends State<ConnectionPage> {
     return Scaffold(
       body: Stack(
         children: [
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/Backgroundimage.png', 
+              fit: BoxFit.cover, 
+            ),
+          ),
+
           Column(
             children: [
               Padding(
                 padding: const EdgeInsets.only(top: 100.0),
-                child: Text(
-                  'Se connecter',
-                  style: TextStyle(
-                    fontSize: 38,
-                    color: AppColors.primaryColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
+                child: Text.rich(
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: 'Baika',
+                              style: GoogleFonts.lobster(
+                                color: AppColors.primaryColor, // Couleur pour 'Baika'
+                                fontSize: 70,
+                                fontWeight: FontWeight.normal,
+                              ),
+                            ),
+                            TextSpan(
+                              text: 'Sugu',
+                              style: GoogleFonts.lobster(
+                                color:Color(0xFF008080), // Couleur pour 'Sugu'
+                                fontSize: 70,
+                                fontWeight: FontWeight.normal,
+                              ),
+                            ),
+                          ],
+                        ),
+                textAlign: TextAlign.center,
+
+                      )
+
               ),
               SizedBox(height: 10),
               Text(
@@ -53,7 +77,9 @@ class _ConnectionPageState extends State<ConnectionPage> {
                 ),
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: 140),
+              // SizedBox(height: 10,),
+              
+              SizedBox(height: 80),
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -160,41 +186,44 @@ class _ConnectionPageState extends State<ConnectionPage> {
                           width: double.infinity,
                           child: ElevatedButton(
                             onPressed: () async {
-                              if (_formKey.currentState!.validate()) {
-                                UserModel user = UserModel(
-                                  email: _emailController.text,
-                                  password: _passwordController.text,
-                                );
+  if (_formKey.currentState!.validate()) {
+    UserModel user = UserModel(
+      email: _emailController.text,
+      password: _passwordController.text,
+    );
 
-                                User? loggedInUser = await _authService.signIn(user);
-                                if (loggedInUser != null) {
-                                  // Successful login
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('Connexion réussie !'),
-                                      backgroundColor: Colors.green,
-                                    ),
-                                  );
-                                   Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => Accueil(),
-                                    ),
-                                  );
-                                  // Navigate to another page or display more info
-                                } else {
-                                  // Failed login
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('Échec de la connexion. Vérifiez vos informations ou votre rôle.'),
-                                      backgroundColor: Colors.red,
-                                    ),
-                                  );
-                                }
-                              }
-                            },
+    User? loggedInUser = await _authService.signIn(user);
+    
+    if (loggedInUser != null) {
+      // Successful login
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Connexion réussie !'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => Accueil(),
+        ),
+      );
+    } else {
+      // Failed login
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Échec: Soit votre compte a été  desactivé par l\'admin, soit vous n\'avez pas le rôle client.',
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+}
+,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primaryColor,
+                              backgroundColor:  AppColors.primaryColor,
                               padding: EdgeInsets.symmetric(vertical: 15),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(15.0),
@@ -223,7 +252,7 @@ class _ConnectionPageState extends State<ConnectionPage> {
                                 );
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primaryColor,
+                              backgroundColor: Color(0xFF008080),
                               padding: EdgeInsets.symmetric(vertical: 15),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(15.0),
