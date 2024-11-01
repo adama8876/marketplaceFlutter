@@ -1,13 +1,18 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:badges/badges.dart' as badges;
 import 'package:google_fonts/google_fonts.dart';
+import 'package:marketplace_app/Models/categoriemodel.dart';
 import 'package:marketplace_app/Models/product_model.dart';
 import 'package:marketplace_app/Services/auth_service.dart';
+import 'package:marketplace_app/Services/categorie_service.dart';
+import 'package:marketplace_app/Services/favoris_service.dart';
 import 'package:marketplace_app/Services/product_service.dart';
 import 'package:marketplace_app/Utils/themes.dart';
+import 'package:marketplace_app/View/catProducts.dart';
 import 'package:marketplace_app/View/component/ProductDetailsPage.dart';
 import 'package:marketplace_app/View/component/image_carousel.dart';
 import 'package:marketplace_app/Models/subcategory_model.dart';
@@ -31,12 +36,19 @@ class _HomepageState extends State<Homepage> {
 
   List<Product> _products = [];
   final ProductService _productService = ProductService();
+  final CategoryService _categoryService = CategoryService();
 
   final CartService _panierService = CartService();
 
   List<Subcategory> _subcategories = [];
-  String _selectedSubcategory = 'All';
+  List<CategoryModel> _categories = [];
+
+  String _selectedSubcategory = 'Toutes';
+  String _selectedCategory = 'Toutes';
   final SubcategoryService _subcategoryService = SubcategoryService();
+  final FavoriteService _favoriteService = FavoriteService();
+final String userId = FirebaseAuth.instance.currentUser!.uid;  // Assure-toi que l'utilisateur est connecté
+
 
 
 
@@ -60,24 +72,53 @@ List<Product> _filteredProducts = [];
   void initState() {
     super.initState();
     _fetchSubcategories();
-    _fetchProducts(); // Fetch products on initialization
+    _fetchCategories();
+    _fetchProducts(); 
      _filteredProducts = _products;
   }
 
- // Fetch products from Firestore
 Future<void> _fetchProducts() async {
   try {
+    // Récupérer les produits et les afficher immédiatement
     List<Product> products = await _productService.fetchProducts();
-    print('Fetched products: $products');
     setState(() {
       _products = products;
-      _filteredProducts = products; // Mettre à jour la liste filtrée initialement
-      _isFavorite = List<bool>.filled(_products.length, false);
+      _filteredProducts = products;
+      _isFavorite = List<bool>.filled(_products.length, false); // Initialement tous à false
     });
+
+    // Ensuite, charger les favoris en arrière-plan sans bloquer l'UI
+    _fetchFavoritesForProductsInChunks(products);
+
   } catch (e) {
     print('Error fetching products: $e');
   }
 }
+
+// Charger les favoris par petits morceaux pour éviter de ralentir l'affichage
+Future<void> _fetchFavoritesForProductsInChunks(List<Product> products) async {
+  try {
+    // Récupérer tous les favoris d'un coup, mais les traiter par petits morceaux
+    List<Product> favoriteProducts = await _favoriteService.getFavoritesByUserId(userId);
+    Set<String> favoriteProductIds = favoriteProducts.map((product) => product.id).toSet();
+
+    // Mettre à jour les favoris par petits groupes pour éviter de bloquer l'interface
+    for (int i = 0; i < products.length; i += 10) {
+      await Future.delayed(Duration(milliseconds: 100)); // Petites pauses pour ne pas bloquer
+
+      int end = (i + 10 < products.length) ? i + 10 : products.length;
+      setState(() {
+        for (int j = i; j < end; j++) {
+          _isFavorite[j] = favoriteProductIds.contains(products[j].id);
+        }
+      });
+    }
+  } catch (e) {
+    print('Error fetching favorites: $e');
+  }
+}
+
+
 
 
 
@@ -92,6 +133,20 @@ Future<void> _fetchProducts() async {
   });
 }
 
+
+
+
+Future<void> _fetchCategories() async {
+  try{
+    List<CategoryModel> categories = await _categoryService.getCategories();
+    setState(() {
+      _categories = categories;
+      print(categories);
+    });
+  } catch(e){
+    print('Error fetching categories:  $e');
+  }
+}
 
 
 
@@ -142,6 +197,7 @@ Future<void> _fetchProducts() async {
 AppBar _buildAppBar() {
   return AppBar(
     backgroundColor: Colors.white, 
+    automaticallyImplyLeading: false,
     elevation: 0, 
     scrolledUnderElevation: 0,
     toolbarHeight: 80,
@@ -235,7 +291,7 @@ AppBar _buildAppBar() {
             child: TextField(
               controller: _searchController,
             onChanged: (value) {
-              _filterProducts(value);  // Appelle la fonction de filtrage à chaque changement
+              _filterProducts(value);  
             },
               decoration: InputDecoration(
                 hintText: 'Rechercher un produit',
@@ -269,56 +325,70 @@ AppBar _buildAppBar() {
     );
   }
 
-  // Subcategory List Builder Method
-  Widget _buildSubcategoryList() {
-    return Padding(
-      padding: const EdgeInsets.only(top: 20, left: 5, bottom: 20, right: 10),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            _buildSubcategoryButton('All', 'All'),
-            ..._subcategories.map((subcategory) {
-              return _buildSubcategoryButton(subcategory.name, subcategory.name);
-            }).toList(),
-          ],
-        ),
+  // Méthode pour construire la liste des sous-catégories
+Widget _buildSubcategoryList() {
+  return Padding(
+    padding: const EdgeInsets.only(top: 20, left: 5, bottom: 20, right: 10),
+    child: SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          _buildSubcategoryButton('Toutes', 'Toutes', null), // Passer null pour le bouton "Toutes"
+          ..._categories.map((category) {
+            return _buildSubcategoryButton(category.name, category.name, category); // Passer `category` pour chaque bouton
+          }).toList(),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 
-  // Method to build individual subcategory buttons
-  Widget _buildSubcategoryButton(String displayText, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: ElevatedButton(
-        onPressed: () {
-          setState(() {
-            _selectedSubcategory = value;
-          });
-        },
-        style: ElevatedButton.styleFrom(
-          padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-          backgroundColor: _selectedSubcategory == value
-              ? AppColors.primaryColor
-              : Colors.grey[200],
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-        ),
-        child: Text(
-          displayText,
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w500,
-            fontSize: 16,
-            color: _selectedSubcategory == value
-                ? Colors.white
-                : const Color.fromARGB(202, 0, 0, 0),
-          ),
+// Méthode pour construire chaque bouton de sous-catégorie
+Widget _buildSubcategoryButton(String displayText, String value, CategoryModel? category) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+    child: ElevatedButton(
+      onPressed: () {
+        setState(() {
+          _selectedCategory = value;
+        });
+
+        // Naviguer uniquement si `category` n'est pas null
+        if (category != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => Catproducts(
+                categoryId: category.id,
+                categoryName: category.name,
+              ),
+            ),
+          );
+        }
+      },
+      style: ElevatedButton.styleFrom(
+        padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+        backgroundColor: _selectedCategory == value
+            ? AppColors.primaryColor
+            : Colors.grey[200],
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
         ),
       ),
-    );
-  }
+      child: Text(
+        displayText,
+        style: GoogleFonts.poppins(
+          fontWeight: FontWeight.w500,
+          fontSize: 16,
+          color: _selectedCategory == value
+              ? Colors.white
+              : const Color.fromARGB(202, 0, 0, 0),
+        ),
+      ),
+    ),
+  );
+}
+
 
   // Image Carousel Builder Method
   Widget _buildImageCarousel() {
@@ -353,7 +423,7 @@ Widget _buildProductGrid() {
         crossAxisCount: 2,
         crossAxisSpacing: 10,
         mainAxisSpacing: 10,
-        childAspectRatio: .61,
+        childAspectRatio: .65,
       ),
       itemCount: _filteredProducts.length, // Utiliser _filteredProducts
       itemBuilder: (context, index) {
@@ -452,11 +522,21 @@ Widget _buildProductGrid() {
                   color: _isFavorite[index] ? Colors.red : Colors.grey,
                   size: 30,
                 ),
-                onPressed: () {
-                  setState(() {
-                    _isFavorite[index] = !_isFavorite[index];
-                  });
-                },
+                onPressed: () async {
+  setState(() {
+    _isFavorite[index] = !_isFavorite[index];  // Toggle the state
+  });
+
+  if (_isFavorite[index]) {
+    // Ajouter aux favoris
+    await _favoriteService.addToFavorites(userId, _filteredProducts[index]);
+  } else {
+    // Retirer des favoris
+    await _favoriteService.removeFromFavorites(userId, _filteredProducts[index].id);
+  }
+},
+
+
               ),
             ),
           ],

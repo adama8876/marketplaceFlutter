@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:marketplace_app/Utils/themes.dart';
 
 class PrivacyPolicyPage extends StatelessWidget {
@@ -8,19 +9,19 @@ class PrivacyPolicyPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.primaryColor,
         elevation: 1,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
         title: Text(
           'Politique de confidentialité',
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
+          style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontWeight: FontWeight.w500,
             fontSize: 20,
           ),
         ),

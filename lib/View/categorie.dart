@@ -17,20 +17,20 @@ class Categorie extends StatefulWidget {
 class _CategorieState extends State<Categorie> {
   final CategoryService _categoryService = CategoryService();
   late Future<List<CategoryModel>> _categoriesFuture;
-  List<CategoryModel> _categories = []; // Liste complète des catégories
-  List<CategoryModel> _filteredCategories = []; // Liste filtrée selon la recherche
+  List<CategoryModel> _categories = []; 
+  List<CategoryModel> _filteredCategories = []; 
   TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _categoriesFuture = _categoryService.getCategories();
-    _searchController.addListener(_onSearchChanged); // Ajout du listener
+    _searchController.addListener(_onSearchChanged); 
   }
 
   @override
   void dispose() {
-    _searchController.dispose(); // Nettoyage du contrôleur
+    _searchController.dispose(); 
     super.dispose();
   }
 
@@ -49,6 +49,7 @@ class _CategorieState extends State<Categorie> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: AppColors.primaryColor,
         elevation: 1,
         title: Text(
@@ -125,7 +126,7 @@ class _CategorieState extends State<Categorie> {
           ),
         ),
       );
-        // Laisse vide pour l'instant. Tu peux y ajouter une action plus tard.
+        
       },
       splashColor: Colors.blue.withAlpha(50), // Effet visuel de l'onde
       borderRadius: BorderRadius.circular(12.0), // Pour arrondir les bords de l'effet d'onde

@@ -228,16 +228,19 @@ class _PagepanierState extends State<Pagepanier> {
                 List items = cartData['items'];
 
                 final articles = items.map((item) => {
+                  'productId': item['productId'],
                   'image': item['mainImageUrl'],
                   'name': item['name'],
                   'price': item['price'],
                   'quantity': item['quantity'],
+                  'variant': item['variant'],
+
                 }).toList();
 
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => CommandeDetails(articles: articles),
+                    builder: (context) => CommandeDetails(articles: articles, ),
                   ),
                 );
               },

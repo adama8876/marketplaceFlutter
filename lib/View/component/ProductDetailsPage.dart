@@ -76,7 +76,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
             fontWeight: FontWeight.w500,
           ),
         ),
-        backgroundColor: AppColors.primaryColor, // AppColors.primaryColor
+        backgroundColor: AppColors.primaryColor, 
         elevation: 12,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -89,35 +89,74 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
         children: [
           // Contenu défilant
           SingleChildScrollView(
-            padding: const EdgeInsets.only(top: 15.0, left: 12, right: 12, bottom: 100), // Marge en bas pour le bouton
+            padding: const EdgeInsets.only(top: 15.0, left: 12, right: 12, bottom: 100), 
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Image du produit
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    final double screenHeight = MediaQuery.of(context).size.height;
-                    return ClipRRect(
-                      borderRadius: BorderRadius.circular(12.0),
-                      child: Container(
-                        margin: const EdgeInsets.only(bottom: 16.0),
-                        width: double.infinity,
-                        height: screenHeight * 0.40,
-                        decoration: BoxDecoration(
-                          color: Color.fromARGB(113, 217, 217, 217),
-                          borderRadius: BorderRadius.circular(12.0),
-                        ),
-                        child: Image.network(
-                          widget.product.mainImageUrl,
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Icon(Icons.broken_image, size: 50, color: Colors.grey);
-                          },
-                        ),
-                      ),
-                    );
-                  },
-                ),
+                // LayoutBuilder(
+                //   builder: (context, constraints) {
+                //     final double screenHeight = MediaQuery.of(context).size.height;
+                //     return ClipRRect(
+                //       borderRadius: BorderRadius.circular(12.0),
+                //       child: Container(
+                //         margin: const EdgeInsets.only(bottom: 16.0),
+                //         width: double.infinity,
+                //         height: screenHeight * 0.40,
+                //         decoration: BoxDecoration(
+                //           color: Color.fromARGB(113, 217, 217, 217),
+                //           borderRadius: BorderRadius.circular(12.0),
+                //         ),
+                //         child: Image.network(
+                //           widget.product.mainImageUrl,
+                //           fit: BoxFit.contain,
+                //           errorBuilder: (context, error, stackTrace) {
+                //             return Icon(Icons.broken_image, size: 50, color: Colors.grey);
+                //           },
+                //         ),
+                //       ),
+                //     );
+                //   },
+                // ),
+                // Section de l'image du produit avec défilement d'images
+LayoutBuilder(
+  builder: (context, constraints) {
+    final double screenHeight = MediaQuery.of(context).size.height;
+    // Liste d'images, inclut uniquement les images existantes
+    List<String> imageUrls = [
+      widget.product.mainImageUrl,
+      if (widget.product.secondImageUrl != null) widget.product.secondImageUrl!,
+      if (widget.product.thirdImageUrl != null) widget.product.thirdImageUrl!,
+      if (widget.product.fourthImageUrl != null) widget.product.fourthImageUrl!,
+    ];
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12.0),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16.0),
+        width: double.infinity,
+        height: screenHeight * 0.40,
+        decoration: BoxDecoration(
+          color: Color.fromARGB(113, 217, 217, 217),
+          borderRadius: BorderRadius.circular(12.0),
+        ),
+        child: PageView.builder(
+          itemCount: imageUrls.length,
+          itemBuilder: (context, index) {
+            return Image.network(
+              imageUrls[index],
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                return Icon(Icons.broken_image, size: 50, color: Colors.grey);
+              },
+            );
+          },
+        ),
+      ),
+    );
+  },
+),
+
                 // Titre et prix du produit
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

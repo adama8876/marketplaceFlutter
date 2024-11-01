@@ -22,7 +22,7 @@ class _AccueilState extends State<Accueil> {
     Homepage(),
     Categorie(),
     Favoris(),
-    Pushnotification(),
+    // Pushnotification(),
     Userinfo()
   ];
 
@@ -35,7 +35,7 @@ class _AccueilState extends State<Accueil> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_selectedIndex], // Display the selected page here
+      body: _pages[_selectedIndex], 
       bottomNavigationBar: CustomBottomNavBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,

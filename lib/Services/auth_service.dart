@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:marketplace_app/Models/subcategory_model.dart';
 import 'package:marketplace_app/models/user_model.dart';
 // import 'package:marketplace_app/Models/user_model.dart';
@@ -15,7 +16,13 @@ class AuthService {
     final FirebaseStorage _storage = FirebaseStorage.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Sign in method
+
+
+
+
+
+
+  
   // Sign in method with role and isActive check
 Future<User?> signIn(UserModel user) async {
   try {
@@ -83,33 +90,46 @@ Future<User?> signIn(UserModel user) async {
 }
 
 
-  // Sign up method (optional)
-  Future<User?> signUp(UserModel user) async {
+// Méthode pour créer un compte client
+  Future<bool> signUp(String prenom, String nom, String email, String telephone, String password) async {
     try {
+      // Crée un utilisateur avec Firebase Authentication
       UserCredential result = await _auth.createUserWithEmailAndPassword(
-        email: user.email,
-        password: user.password,
+        email: email,
+        password: password,
       );
 
       User? newUser = result.user;
 
       if (newUser != null) {
-        // Create a user document in Firestore with the 'client' role
-        await _firestore.collection('users').doc(newUser.uid).set({
-          'email': user.email,
-          'prenom': user.prenom ?? '',
-          'nom': user.nom ?? '',
-          'role': 'client',
-          'telephone': user.telephone ?? '',
-        });
-        return newUser;
+        // Créer un document dans Firestore pour l'utilisateur
+        UserModel userModel = UserModel(
+          email: email,
+          password: password, // N'oublie pas que nous ne stockons pas le mot de passe en clair
+          prenom: prenom,
+          nom: nom,
+          role: 'client',
+          telephone: telephone,
+          profileImage: '', // On peut ajouter une image de profil plus tard
+          isActive: true, // Par défaut, le compte est actif lors de la création
+        );
+
+        await _firestore.collection('users').doc(newUser.uid).set(userModel.toMap());
+        print('Compte client créé avec succès');
+        return true;
       }
-      return null;
+
+      return false;
     } catch (e) {
-      print('Error: $e');
-      return null;
+      print('Erreur lors de la création du compte client: $e');
+      return false;
     }
   }
+
+
+
+
+  
 
   // Sign out method
   Future<void> signOut() async {
@@ -206,6 +226,7 @@ Future<User?> signIn(UserModel user) async {
 class SubcategoryService {
   final CollectionReference _subcategoryCollection =
       FirebaseFirestore.instance.collection('subcategories');
+  
 
   // Fetch subcategories from Firestore
   Future<List<Subcategory>> fetchSubcategories() async {
@@ -218,4 +239,7 @@ class SubcategoryService {
       throw Exception('Error fetching subcategories: $e');
     }
   }
+
+  
+  
 }

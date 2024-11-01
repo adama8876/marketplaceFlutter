@@ -1,8 +1,11 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:marketplace_app/Models/commande_model.dart';
 import 'package:marketplace_app/Services/auth_service.dart';
 import 'package:marketplace_app/Utils/themes.dart';
+import 'package:marketplace_app/View/Commandes.dart';
 // import 'package:marketplace_app/View/Accueil.dart';
 import 'package:marketplace_app/View/connectionpage.dart';
 import 'package:marketplace_app/View/param%C3%A8tres/privacyPolicy.dart';
@@ -29,7 +32,7 @@ class _UserinfoState extends State<Userinfo> {
 
  Future<void> _fetchUserData() async {
   var user = await _authService.getUserData();
-  print('Fetched user: ${user?.prenom}, ${user?.nom}, ${user?.profileImage}'); // Debugging line
+  // print('Fetched user: ${user?.prenom}, ${user?.nom}, ${user?.profileImage}'); // Debugging line
   setState(() {
     _prenom = user?.prenom;
     _nom = user?.nom;
@@ -41,11 +44,13 @@ class _UserinfoState extends State<Userinfo> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.grey[30],
-        elevation: 1,
+        automaticallyImplyLeading: false,
+        backgroundColor: AppColors.primaryColor,
+        elevation: 1, 
+    // scrolledUnderElevation: 0,
         title: Text(
           'Paramètres',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w500),
         ),
         centerTitle: true,
       ),
@@ -130,7 +135,11 @@ class _UserinfoState extends State<Userinfo> {
                   icon: Icons.shopping_cart,
                   text: 'Mes commandes',
                   onTap: () {
-                    // Navigate to orders page
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => Commandes()),
+                    );
+                    
                   },
                 ),
                 _buildSettingsButton(
@@ -156,7 +165,7 @@ class _UserinfoState extends State<Userinfo> {
                       MaterialPageRoute(builder: (context) => ConnectionPage()),
                     );
                     } catch (e) {
-                      print('Error during sign out: $e');
+                      // print('Error during sign out: $e');
                     }
                   },
                 ),

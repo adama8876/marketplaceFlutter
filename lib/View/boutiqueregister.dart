@@ -3,12 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart'; // Assurez-vous d'ajouter ce package
 import 'package:marketplace_app/Services/user_service.dart';
 import 'package:marketplace_app/Utils/themes.dart';
-import 'package:quickalert/quickalert.dart'; // Assurez-vous d'importer QuickAlert
+import 'package:marketplace_app/View/component/Validator.dart';
+import 'package:quickalert/quickalert.dart';
 
 class BoutiqueRegister extends StatelessWidget {
   const BoutiqueRegister({Key? key}) : super(key: key);
 
- @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -23,21 +24,6 @@ class BoutiqueRegister extends StatelessWidget {
               ],
             ),
           ),
-          
-          // Positioned(
-          //   top: 40, 
-          //   left: 20, 
-          //   child: GestureDetector(
-          //     onTap: () {
-          //       Navigator.of(context).pop(); 
-          //     },
-          //     child: Icon(
-          //       Icons.arrow_back,
-          //       size: 40,
-          //       color: AppColors.primaryColor, 
-          //     ),
-          //   ),
-          // ),
         ],
       ),
     );
@@ -50,7 +36,6 @@ class LogoSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      
       height: MediaQuery.of(context).size.height * 0.4, // 40% de la hauteur de l'écran
       width: double.infinity,
       color: Colors.transparent, // Fond transparent si nécessaire
@@ -70,18 +55,16 @@ class FormSection extends StatefulWidget {
 }
 
 class _FormSectionState extends State<FormSection> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController boutiqueNomController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController telephoneController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
-  
-  String? profileImage; 
 
-  
+  String? profileImage;
+
   final UserService userService = UserService();
-
-  //  String? profileImage; // Initialize as null
 
   Future<void> pickImage() async {
     final ImagePicker picker = ImagePicker();
@@ -93,8 +76,6 @@ class _FormSectionState extends State<FormSection> {
     }
   }
 
-
-// Nouvelle méthode pour réinitialiser les contrôleurs et l'image de profil
   void resetForm() {
     boutiqueNomController.clear();
     emailController.clear();
@@ -106,47 +87,48 @@ class _FormSectionState extends State<FormSection> {
     });
   }
 
-
   Future<void> createVendor() async {
-  if (profileImage == null) {
-    QuickAlert.show(
-      context: context,
-      type: QuickAlertType.warning,
-      text: 'Veuillez sélectionner une image de profil.',
-    );
-    return; // Exit the method if no image is selected
+    // Effectuer la validation des champs du formulaire
+    if (_formKey.currentState?.validate() ?? false) {
+      // Vérifier si l'image de profil est sélectionnée
+      if (profileImage == null) {
+        QuickAlert.show(
+          context: context,
+          type: QuickAlertType.warning,
+          text: 'Veuillez sélectionner une image de profil.',
+        );
+        return;
+      }
+
+      // Si tous les champs sont valides, procéder à la création du vendeur
+      final success = await userService.createVendor(
+        email: emailController.text,
+        password: passwordController.text,
+        telephone: telephoneController.text,
+        boutiqueNom: boutiqueNomController.text,
+        description: descriptionController.text,
+        profileImage: profileImage!,
+      );
+
+      // Gérer le résultat de la création
+      if (success) {
+        QuickAlert.show(
+          context: context,
+          type: QuickAlertType.success,
+          text: 'Votre demande de création de boutique a été envoyée!',
+        );
+        resetForm();
+      } else {
+        QuickAlert.show(
+          context: context,
+          type: QuickAlertType.error,
+          text: 'Erreur lors de la création de votre boutique. Veuillez réessayer.',
+        );
+      }
+    } else {
+      // Si la validation échoue, vous pouvez ajouter un message d'erreur ici si nécessaire
+    }
   }
-
-  // If the image is selected, proceed with creating the vendor
-  final success = await userService.createVendor(
-    email: emailController.text,
-    password: passwordController.text,
-    telephone: telephoneController.text,
-    boutiqueNom: boutiqueNomController.text,
-    description: descriptionController.text,
-    profileImage: profileImage!, // Use the non-null assertion operator (!)
-  );
-
-  if (success) {
-    QuickAlert.show(
-      context: context,
-      type: QuickAlertType.success,
-      text: 'Votre demande de création de boutique a été envoyée!',
-    );
-    resetForm();
-  } else {
-    QuickAlert.show(
-      context: context,
-      type: QuickAlertType.error,
-      text: 'Erreur lors de la création de votre boutique. Veuillez réessayer.',
-    );
-
-     resetForm();
-  }
-
-
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -160,58 +142,68 @@ class _FormSectionState extends State<FormSection> {
       ),
       padding: const EdgeInsets.symmetric(horizontal: 18.0),
       child: SingleChildScrollView(
-        child: Column(
-          children: [
-            SizedBox(height: 20),
-            CustomTextField(
-              controller: boutiqueNomController,
-              label: 'Nom de la boutique',
-            ),
-            CustomTextField(
-              controller: emailController,
-              label: 'Email',
-            ),
-            CustomTextField(
-              controller: telephoneController,
-              label: 'Téléphone',
-            ),
-            ExperienceDropdown(),
-            CustomTextField(
-              controller: passwordController,
-              label: 'Mot de passe',
-              obscureText: true,
-              suffixIcon: Icon(Icons.visibility_off, color: Colors.grey),
-            ),
-            CustomTextField(
-              controller: descriptionController,
-              label: 'Description de la boutique',
-              maxLines: 3,
-            ),
-            SizedBox(height: 20),
-            // Champ pour sélectionner l'image de profil
-            GestureDetector(
-              onTap: pickImage,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16.0),
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Center(
-                  child: Text(
-                    profileImage == null ? 'Choisir une image de profil' : 'Image choisie: ${profileImage!.split('/').last}',
-                    style: TextStyle(color: Colors.grey[700]),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              SizedBox(height: 20),
+              CustomTextField(
+                controller: boutiqueNomController,
+                label: 'Nom de la boutique',
+                validator: FormValidators.validateNomBoutique,
+              ),
+              CustomTextField(
+                controller: emailController,
+                label: 'Email',
+                validator: FormValidators.validateEmail,
+              ),
+              CustomTextField(
+                controller: telephoneController,
+                label: 'Téléphone',
+                validator: FormValidators.validateTelephone,
+              ),
+              ExperienceDropdown(),
+              CustomTextField(
+                controller: passwordController,
+                label: 'Mot de passe',
+                validator: FormValidators.validateMotDePasse,
+                obscureText: true,
+                suffixIcon: Icon(Icons.visibility_off, color: Colors.grey),
+              ),
+              CustomTextField(
+                controller: descriptionController,
+                label: 'Description de la boutique',
+                validator: FormValidators.validateDescription,
+                maxLines: 3,
+              ),
+              SizedBox(height: 20),
+              // Champ pour sélectionner l'image de profil
+              GestureDetector(
+                onTap: pickImage,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16.0),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Center(
+                    child: Text(
+                      profileImage == null
+                          ? 'Choisir une image de profil'
+                          : 'Image choisie: ${profileImage!.split('/').last}',
+                      style: TextStyle(color: Colors.grey[700]),
+                    ),
                   ),
                 ),
               ),
-            ),
-            SizedBox(height: 30),
-            SubmitButton(
-              onPressed: createVendor, // Appel de la méthode createVendor
-            ),
-            SizedBox(height: 20),
-          ],
+              SizedBox(height: 30),
+              SubmitButton(
+                onPressed: createVendor, // Appel de la méthode createVendor
+              ),
+              SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );
@@ -224,6 +216,7 @@ class CustomTextField extends StatelessWidget {
   final int maxLines;
   final Widget? suffixIcon;
   final TextEditingController controller;
+  final String? Function(String?)? validator;
 
   const CustomTextField({
     Key? key,
@@ -232,13 +225,14 @@ class CustomTextField extends StatelessWidget {
     this.maxLines = 1,
     this.suffixIcon,
     required this.controller,
+    this.validator,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: TextField(
+      child: TextFormField(
         controller: controller,
         obscureText: obscureText,
         maxLines: maxLines,
@@ -255,6 +249,7 @@ class CustomTextField extends StatelessWidget {
           ),
           contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
         ),
+        validator: validator,
       ),
     );
   }
@@ -307,64 +302,24 @@ class SubmitButton extends StatelessWidget {
       onTap: onPressed,
       child: Container(
         height: 55,
-        width: 300,
+        width: 350,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(10),
           gradient: const LinearGradient(
-            colors: [
-              Color(0xFF033D62),
-              Color.fromARGB(199, 44, 69, 80),
-            ],
+            colors: [Color(0xFF033D62), Color(0xFF6EB8D6)],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
           ),
         ),
         child: const Center(
           child: Text(
-            'CRÉER UN COMPTE VENDEUR',
+            'Soumettre',
             style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
+              fontSize: 18,
               color: Colors.white,
+              fontWeight: FontWeight.bold,
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class LoginPrompt extends StatelessWidget {
-  const LoginPrompt({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.bottomRight,
-      child: Padding(
-        padding: const EdgeInsets.only(right: 20, bottom: 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            const Text(
-              "Vous avez déjà un compte?",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.grey,
-              ),
-            ),
-            GestureDetector(
-              onTap: () {
-                // Logique de redirection vers la page de connexion
-              },
-              child: const Text(
-                'Connectez-vous ici',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF033D62),
-                ),
-              ),
-            ),
-          ],
         ),
       ),
     );

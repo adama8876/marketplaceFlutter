@@ -37,7 +37,7 @@ class Product {
   // Factory method to create a Product from Firestore
   factory Product.fromFirestore(DocumentSnapshot doc) {
   final data = doc.data() as Map<String, dynamic>;
-  print('Firestore data: $data'); // Log the data for inspection
+  // print('Firestore data: $data'); // Log the data for inspectionM
 
   return Product(
     id: doc.id,
@@ -57,6 +57,8 @@ class Product {
           .toList(),
     );
 }
+
+  get userId => null;
 
 
 }
